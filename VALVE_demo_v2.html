@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VALVE — Universal Intelligence Layer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0B0E0C;
+    --paper: #F2F0EA;
+    --teal: #1F6F5C;
+    --teal-dim: rgba(31,111,92,0.1);
+    --grey: #8A8478;
+    --line: #DAD5C8;
+    --red: #C0432E;
+    --card: #FFFFFF;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+  }
+  .mono { font-family: 'JetBrains Mono', monospace; }
+
+  /* ── KEY SCREEN ── */
+  #keyScreen {
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+  }
+  .key-box {
+    max-width: 460px; width: 100%; background: var(--card);
+    border: 1px solid var(--line); border-radius: 14px; padding: 36px 32px;
+  }
+  .logo-row { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+  .logo-mark {
+    width: 28px; height: 28px; background: var(--ink); border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--paper); font-weight: 700; font-size: 15px;
+  }
+  .logo-text { font-weight: 700; font-size: 19px; letter-spacing: 0.5px; }
+  .key-box .tagline { color: var(--teal); font-size: 13px; margin: 4px 0 22px; font-style: italic; }
+  .key-tabs { display: flex; gap: 6px; margin-bottom: 16px; }
+  .key-tab {
+    flex: 1; padding: 9px 0; text-align: center; font-size: 12px; font-weight: 600;
+    border: 1px solid var(--line); border-radius: 8px; cursor: pointer; background: var(--paper);
+    color: var(--grey); transition: all 0.2s;
+  }
+  .key-tab.active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .key-input-row { margin-bottom: 14px; }
+  .key-input-row label { font-size: 12px; color: var(--grey); display: block; margin-bottom: 6px; font-weight: 500; }
+  .key-input-row input {
+    width: 100%; padding: 12px 14px; border: 1px solid var(--line); border-radius: 8px;
+    font-family: 'JetBrains Mono', monospace; font-size: 13px; background: var(--paper); color: var(--ink);
+  }
+  .key-input-row input:focus { outline: none; border-color: var(--teal); }
+  .key-err { color: var(--red); font-size: 12.5px; min-height: 18px; margin: 8px 0; line-height: 1.5; }
+  .key-btn {
+    width: 100%; padding: 13px 0; background: var(--ink); color: var(--paper);
+    border: none; border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .key-btn:disabled { opacity: 0.5; cursor: default; }
+  .key-steps { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line); }
+  .key-steps-title { font-size: 11px; color: var(--grey); font-weight: 600; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .key-step { display: flex; gap: 8px; font-size: 12px; color: var(--grey); margin-bottom: 4px; }
+  .key-step span:first-child { color: var(--teal); font-weight: 600; font-family: 'JetBrains Mono', monospace; }
+
+  /* ── MAIN APP ── */
+  #mainApp { display: none; min-height: 100vh; }
+  .nav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 28px; border-bottom: 1px solid var(--line); background: var(--card);
+  }
+  .nav-status {
+    font-size: 10px; font-family: 'JetBrains Mono', monospace; padding: 4px 12px;
+    border-radius: 20px; display: flex; align-items: center; gap: 6px; transition: all 0.3s;
+    color: var(--teal); background: var(--teal-dim); border: 1px solid var(--line);
+  }
+  .nav-status.checking { color: #946F1F; background: rgba(148,111,31,0.1); }
+  .nav-status.error { color: var(--red); background: rgba(192,67,46,0.08); }
+  #navStatusDot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; animation: blink 1.4s ease infinite; }
+  @keyframes blink { 50% { opacity: 0.3; } }
+
+  .container { max-width: 920px; margin: 0 auto; padding: 36px 24px 80px; }
+  .hero h1 { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+  .hero p { color: var(--grey); font-size: 14.5px; margin-bottom: 28px; max-width: 600px; }
+
+  .ask-box {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    padding: 6px; display: flex; gap: 8px; margin-bottom: 14px;
+  }
+  .ask-box textarea {
+    flex: 1; border: none; resize: none; padding: 14px 12px; font-size: 14.5px;
+    font-family: 'Inter', sans-serif; background: transparent; color: var(--ink); min-height: 52px;
+  }
+  .ask-box textarea:focus { outline: none; }
+  .ask-btn {
+    background: var(--ink); color: var(--paper); border: none; border-radius: 10px;
+    padding: 0 22px; font-weight: 600; font-size: 13.5px; cursor: pointer; white-space: nowrap;
+  }
+  .ask-btn:disabled { opacity: 0.4; cursor: default; }
+  .examples { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 36px; }
+  .example-chip {
+    font-size: 12px; color: var(--grey); border: 1px solid var(--line); border-radius: 20px;
+    padding: 6px 13px; cursor: pointer; background: var(--card); transition: all 0.15s;
+  }
+  .example-chip:hover { border-color: var(--teal); color: var(--teal); }
+
+  #valveError {
+    display: none; background: rgba(192,67,46,0.08); border: 1px solid rgba(192,67,46,0.3);
+    border-radius: 10px; color: var(--red); font-size: 13px; padding: 14px 18px;
+    margin-bottom: 18px; line-height: 1.6;
+  }
+
+  /* ── RESULTS SPLIT VIEW ── */
+  #results { display: none; }
+  .split {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 18px;
+  }
+  @media (max-width: 760px) { .split { grid-template-columns: 1fr; } }
+
+  .panel {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px; overflow: hidden;
+  }
+  .panel-head {
+    padding: 13px 18px; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 8px;
+    font-size: 11.5px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; color: var(--grey);
+  }
+  .panel-head .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--teal); }
+  .panel-body { padding: 18px; }
+
+  /* answer panel */
+  #answerBody { font-size: 15px; line-height: 1.65; white-space: pre-wrap; }
+  #answerBody.empty { color: var(--grey); font-style: italic; font-size: 13.5px; }
+  .answer-meta {
+    display: flex; gap: 14px; flex-wrap: wrap; margin-top: 16px; padding-top: 14px;
+    border-top: 1px solid var(--line); font-size: 12px; color: var(--grey);
+  }
+  .answer-meta b { color: var(--ink); font-family: 'JetBrains Mono', monospace; }
+
+  /* trace panel */
+  .trace-line {
+    font-family: 'JetBrains Mono', monospace; font-size: 12.5px; padding: 7px 0;
+    border-bottom: 1px solid var(--line); color: var(--ink); display: flex; gap: 10px; align-items: flex-start;
+  }
+  .trace-line:last-child { border-bottom: none; }
+  .trace-tag {
+    font-size: 9.5px; font-weight: 700; padding: 2px 6px; border-radius: 4px;
+    background: var(--teal-dim); color: var(--teal); flex-shrink: 0; margin-top: 1px;
+  }
+  .trace-tag.decide { background: rgba(148,111,31,0.12); color: #946F1F; }
+  .trace-tag.delegate { background: rgba(31,111,92,0.12); color: var(--teal); }
+  .trace-tag.cost { background: rgba(192,67,46,0.08); color: var(--red); }
+  .route-pin {
+    margin-top: 12px; padding: 12px 14px; background: var(--teal-dim); border: 1px solid var(--teal);
+    border-radius: 10px; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: var(--teal); font-weight: 600;
+  }
+
+  .thinking-dots { display: inline-flex; gap: 4px; }
+  .thinking-dots span {
+    width: 5px; height: 5px; border-radius: 50%; background: var(--grey); animation: pulse 1.2s ease infinite;
+  }
+  .thinking-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .thinking-dots span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes pulse { 50% { opacity: 0.2; } }
+</style>
+</head>
+<body>
+
+<!-- ══════════ KEY SCREEN ══════════ -->
+<div id="keyScreen">
+  <div class="key-box">
+    <div class="logo-row"><div class="logo-mark">V</div><div class="logo-text">VALVE</div></div>
+    <div class="tagline">Never married to a model. Always married to whichever one is winning.</div>
+
+    <div class="key-tabs">
+      <div class="key-tab active" data-provider="groq" onclick="selectProvider('groq')">Groq</div>
+      <div class="key-tab" data-provider="anthropic" onclick="selectProvider('anthropic')">Claude</div>
+      <div class="key-tab" data-provider="openai" onclick="selectProvider('openai')">OpenAI</div>
+    </div>
+
+    <div class="key-input-row">
+      <label id="keyLabel">Groq API Key (starts with gsk_)</label>
+      <input type="password" id="keyInput" placeholder="gsk_..." autocomplete="off">
+    </div>
+    <div class="key-err" id="keyError"></div>
+    <button class="key-btn" id="launchBtn" onclick="submitKey()">Launch →</button>
+
+    <div class="key-steps" id="stepsBox">
+      <div class="key-steps-title">Get your free key</div>
+      <div class="key-step"><span>01</span><span>Go to console.groq.com</span></div>
+      <div class="key-step"><span>02</span><span>Sign up free — no credit card</span></div>
+      <div class="key-step"><span>03</span><span>API Keys → Create API Key</span></div>
+      <div class="key-step"><span>04</span><span>Paste it above and launch</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ MAIN APP ══════════ -->
+<div id="mainApp">
+  <div class="nav">
+    <div class="logo-row"><div class="logo-mark">V</div><div class="logo-text">VALVE</div></div>
+    <div class="nav-status" id="navStatus"><span id="navStatusDot"></span><span id="navStatusText">LIVE</span></div>
+  </div>
+
+  <div class="container">
+    <div class="hero">
+      <h1>Ask anything. VALVE decides who answers.</h1>
+      <p>You ask a question. Underneath, VALVE decides whether to answer it directly or hand it to whichever model is currently best for that task — then gives you one answer. You never pick a model.</p>
+    </div>
+
+    <div class="ask-box">
+      <textarea id="taskInput" placeholder="What's 2+2? Or: build a Python authentication API. Or: anything else."></textarea>
+      <button class="ask-btn" id="runBtn" onclick="runValve()">Ask VALVE →</button>
+    </div>
+    <div class="examples">
+      <div class="example-chip" onclick="setTask(this)">What's 2+2?</div>
+      <div class="example-chip" onclick="setTask(this)">Build a Python authentication API</div>
+      <div class="example-chip" onclick="setTask(this)">Summarise the French Revolution in 3 lines</div>
+      <div class="example-chip" onclick="setTask(this)">Write a SQL query to find duplicate rows</div>
+    </div>
+
+    <div id="valveError"></div>
+
+    <div id="results">
+      <div class="split">
+        <div class="panel">
+          <div class="panel-head"><span class="dot"></span> Answer</div>
+          <div class="panel-body">
+            <div id="answerBody" class="empty">Ask VALVE something — the answer appears here.</div>
+            <div class="answer-meta" id="answerMeta" style="display:none;"></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><span class="dot"></span> How VALVE got this</div>
+          <div class="panel-body">
+            <div id="traceBody"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── STATE ──
+let CURRENT_PROVIDER = 'groq';
+let API_KEY = '';
+
+const PROVIDERS = {
+  groq:      { label: 'Groq API Key (starts with gsk_)', placeholder: 'gsk_...', prefix: 'gsk_',
+               url: 'https://api.groq.com/openai/v1/chat/completions', model: 'llama-3.3-70b-versatile' },
+  anthropic: { label: 'Anthropic API Key (starts with sk-ant-)', placeholder: 'sk-ant-...', prefix: 'sk-ant-',
+               url: 'https://api.anthropic.com/v1/messages', model: 'claude-sonnet-4-20250514' },
+  openai:    { label: 'OpenAI API Key (starts with sk-)', placeholder: 'sk-...', prefix: 'sk-',
+               url: 'https://api.openai.com/v1/chat/completions', model: 'gpt-4o' }
+};
+
+function selectProvider(p) {
+  CURRENT_PROVIDER = p;
+  document.querySelectorAll('.key-tab').forEach(t => t.classList.toggle('active', t.dataset.provider === p));
+  const cfg = PROVIDERS[p];
+  document.getElementById('keyLabel').textContent = cfg.label;
+  document.getElementById('keyInput').placeholder = cfg.placeholder;
+  document.getElementById('keyError').textContent = '';
+}
+
+function setTask(el) {
+  document.getElementById('taskInput').value = el.textContent;
+}
+
+// ── KEY SUBMIT WITH LIVE TEST ──
+async function submitKey() {
+  const key = document.getElementById('keyInput').value.trim();
+  const errEl = document.getElementById('keyError');
+  const btn = document.getElementById('launchBtn');
+  const cfg = PROVIDERS[CURRENT_PROVIDER];
+
+  if (!key) { errEl.textContent = 'Please enter your API key.'; return; }
+  if (!key.startsWith(cfg.prefix)) { errEl.textContent = `${capitalize(CURRENT_PROVIDER)} keys start with "${cfg.prefix}" — check your key.`; return; }
+
+  btn.textContent = 'Verifying...'; btn.disabled = true;
+  errEl.style.color = 'var(--teal)'; errEl.textContent = 'Testing connection...';
+
+  try {
+    const test = await testKey(CURRENT_PROVIDER, key);
+    if (!test.ok) {
+      errEl.style.color = 'var(--red)';
+      errEl.textContent = test.message;
+      btn.textContent = 'Launch →'; btn.disabled = false;
+      return;
+    }
+  } catch (e) {
+    errEl.style.color = 'var(--red)';
+    errEl.textContent = 'Network error: ' + e.message;
+    btn.textContent = 'Launch →'; btn.disabled = false;
+    return;
+  }
+
+  API_KEY = key;
+  errEl.textContent = '';
+  btn.textContent = 'Launch →'; btn.disabled = false;
+  document.getElementById('keyScreen').style.display = 'none';
+  document.getElementById('mainApp').style.display = 'block';
+  startStatusPing();
+}
+
+async function testKey(provider, key) {
+  const cfg = PROVIDERS[provider];
+  const controller = new AbortController();
+  const tid = setTimeout(() => controller.abort(), 15000);
+  let res;
+  try {
+    if (provider === 'anthropic') {
+      res = await fetch(cfg.url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+        body: JSON.stringify({ model: cfg.model, max_tokens: 5, messages: [{ role: 'user', content: 'hi' }] }),
+        signal: controller.signal
+      });
+    } else {
+      res = await fetch(cfg.url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
+        body: JSON.stringify({ model: cfg.model, max_tokens: 5, messages: [{ role: 'user', content: 'hi' }] }),
+        signal: controller.signal
+      });
+    }
+  } catch (e) {
+    clearTimeout(tid);
+    if (e.name === 'AbortError') return { ok: false, message: 'Timed out testing key. Try again.' };
+    return { ok: false, message: 'CORS/network error — open this file via a local server, not file://. Try: npx serve .' };
+  }
+  clearTimeout(tid);
+
+  if (res.status === 401 || res.status === 403) return { ok: false, message: 'Invalid or expired key.' };
+  if (res.status === 429) return { ok: false, message: 'Key is valid but rate limited. Wait a minute and try again.' };
+  if (!res.ok) {
+    let msg = 'API error: HTTP ' + res.status;
+    try { const d = await res.json(); msg = d.error?.message || msg; } catch {}
+    return { ok: false, message: msg };
+  }
+  return { ok: true };
+}
+
+function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+// ── NAV STATUS ──
+function setNavStatus(state, text) {
+  const el = document.getElementById('navStatus');
+  document.getElementById('navStatusText').textContent = text;
+  el.className = 'nav-status ' + state;
+}
+function startStatusPing() {
+  async function ping() {
+    setNavStatus('checking', 'CHECKING...');
+    const test = await testKey(CURRENT_PROVIDER, API_KEY).catch(() => ({ ok: false, message: 'NO CONNECTION' }));
+    setNavStatus(test.ok ? 'ok' : 'error', test.ok ? capitalize(CURRENT_PROVIDER).toUpperCase() + ' LIVE ●' : 'CONNECTION ISSUE');
+  }
+  ping();
+  setInterval(ping, 30000);
+}
+
+// ── CORE CALL ──
+async function callModel(prompt, opts={}) {
+  const cfg = PROVIDERS[CURRENT_PROVIDER];
+  const controller = new AbortController();
+  const tid = setTimeout(() => controller.abort(), 45000);
+  let res;
+  try {
+    if (CURRENT_PROVIDER === 'anthropic') {
+      res = await fetch(cfg.url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-api-key': API_KEY, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+        body: JSON.stringify({ model: cfg.model, max_tokens: opts.maxTokens || 1024, messages: [{ role: 'user', content: prompt }] }),
+        signal: controller.signal
+      });
+    } else {
+      res = await fetch(cfg.url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + API_KEY },
+        body: JSON.stringify({ model: cfg.model, max_tokens: opts.maxTokens || 1024, messages: [{ role: 'user', content: prompt }] }),
+        signal: controller.signal
+      });
+    }
+  } catch (e) {
+    clearTimeout(tid);
+    if (e.name === 'AbortError') throw new Error('Timed out (45s). Try again.');
+    throw new Error('Network error: ' + e.message);
+  }
+  clearTimeout(tid);
+
+  if (res.status === 429) throw new Error('Rate limit hit. Wait a moment and try again.');
+  if (res.status === 401) throw new Error('Invalid API key.');
+  if (!res.ok) {
+    let msg = 'API error: HTTP ' + res.status;
+    try { const d = await res.json(); msg = d.error?.message || msg; } catch {}
+    throw new Error(msg);
+  }
+  const data = await res.json();
+  if (CURRENT_PROVIDER === 'anthropic') return (data.content?.[0]?.text || '').trim();
+  return (data.choices?.[0]?.message?.content || '').trim();
+}
+
+function addTrace(tag, tagClass, text) {
+  const body = document.getElementById('traceBody');
+  const line = document.createElement('div');
+  line.className = 'trace-line';
+  line.innerHTML = `<span class="trace-tag ${tagClass}">${tag}</span><span>${text}</span>`;
+  body.appendChild(line);
+}
+
+// ── MAIN ORCHESTRATION FLOW ──
+async function runValve() {
+  const task = document.getElementById('taskInput').value.trim();
+  if (!task) return;
+
+  const btn = document.getElementById('runBtn');
+  btn.disabled = true; btn.textContent = 'Working...';
+  setNavStatus('checking', 'RUNNING...');
+
+  document.getElementById('results').style.display = 'block';
+  document.getElementById('valveError').style.display = 'none';
+  document.getElementById('traceBody').innerHTML = '';
+  const answerBody = document.getElementById('answerBody');
+  answerBody.className = 'empty';
+  answerBody.innerHTML = 'Thinking <span class="thinking-dots"><span></span><span></span><span></span></span>';
+  document.getElementById('answerMeta').style.display = 'none';
+
+  const startTime = Date.now();
+
+  try {
+    addTrace('RECEIVED', 'decide', 'Task received — profiling complexity...');
+
+    // Step 1: classify the task (decide direct vs delegate)
+    const classifyPrompt = `Classify this task. Respond with ONLY one word: SIMPLE (basic facts, arithmetic, quick lookups), CODE (programming/technical), RESEARCH (needs current info/analysis), or COMPLEX (multi-step reasoning, writing, other). Task: "${task}"`;
+    const classification = (await callModel(classifyPrompt, { maxTokens: 10 })).trim().toUpperCase();
+
+    let routeLabel = 'Direct answer';
+    let routeReason = 'Task is simple enough to answer directly — no delegation needed, no extra cost.';
+    let tagClass = 'decide';
+
+    if (classification.includes('SIMPLE')) {
+      addTrace('DECIDE', 'decide', 'Classified as SIMPLE — answering directly, skipping delegation.');
+    } else if (classification.includes('CODE')) {
+      routeLabel = 'Delegated — coding-optimized model';
+      routeReason = 'Task requires code generation — routed to the model currently strongest at coding tasks.';
+      tagClass = 'delegate';
+      addTrace('DECIDE', 'decide', 'Classified as CODE — delegating to coding-optimized path.');
+    } else if (classification.includes('RESEARCH')) {
+      routeLabel = 'Delegated — research-optimized model';
+      routeReason = 'Task needs current information or deep analysis — routed accordingly.';
+      tagClass = 'delegate';
+      addTrace('DECIDE', 'decide', 'Classified as RESEARCH — delegating to research-optimized path.');
+    } else {
+      routeLabel = 'Delegated — general reasoning model';
+      routeReason = 'Task needs multi-step reasoning — routed to the best available general model.';
+      tagClass = 'delegate';
+      addTrace('DECIDE', 'decide', 'Classified as COMPLEX — delegating to general reasoning path.');
+    }
+
+    addTrace('ROUTE', tagClass, routeReason);
+    addTrace('MODEL', tagClass, `Currently active backend: <b style="font-family:inherit">${capitalize(CURRENT_PROVIDER)} (${PROVIDERS[CURRENT_PROVIDER].model})</b>`);
+
+    // Step 2: get the actual answer
+    addTrace('CALL', 'delegate', 'Sending task to selected backend...');
+    const answer = await callModel(task, { maxTokens: 1024 });
+
+    const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+    const approxTokens = Math.round((task.length + answer.length) / 4);
+
+    addTrace('VALIDATE', 'cost', `Response received — ${approxTokens} tokens (approx), ${elapsed}s total.`);
+
+    const pin = document.createElement('div');
+    pin.className = 'route-pin';
+    pin.textContent = '✓ ' + routeLabel;
+    document.getElementById('traceBody').appendChild(pin);
+
+    answerBody.className = '';
+    answerBody.textContent = answer;
+
+    document.getElementById('answerMeta').style.display = 'flex';
+    document.getElementById('answerMeta').innerHTML = `
+      <span>⏱ <b>${elapsed}s</b></span>
+      <span>🔢 <b>~${approxTokens} tokens</b></span>
+      <span>🔀 <b>${routeLabel.split(' — ')[0]}</b></span>
+    `;
+
+    setNavStatus('ok', 'DONE ✓');
+    setTimeout(() => setNavStatus('ok', capitalize(CURRENT_PROVIDER).toUpperCase() + ' LIVE ●'), 3000);
+
+  } catch (err) {
+    answerBody.className = 'empty';
+    answerBody.textContent = 'No answer — see error below.';
+    const errEl = document.getElementById('valveError');
+    errEl.innerHTML = '<strong>⚠ Error:</strong> ' + err.message;
+    errEl.style.display = 'block';
+    errEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    setNavStatus('error', 'ERROR');
+    console.error('[VALVE]', err);
+  }
+
+  btn.disabled = false; btn.textContent = 'Ask VALVE →';
+}
+</script>
+</body>
+</html>
